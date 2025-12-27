@@ -16,31 +16,137 @@ body {
     margin: 0;
     font-family: 'Orbitron', sans-serif;
     background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+    background-size: 400% 400%;
+    animation: gradientMove 15s ease infinite;
     color: #fff;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     height: 100vh;
+    overflow: hidden;
+}
+@keyframes gradientMove {
+    0%{background-position:0% 50%;}
+    50%{background-position:100% 50%;}
+    100%{background-position:0% 50%;}
 }
 
-h1 { margin-bottom: 20px; color: #00fffc; text-shadow: 0 0 10px #00fffc; }
+h1 {
+    margin-bottom: 20px;
+    color: #00fffc;
+    text-shadow: 0 0 15px #00fffc;
+    font-size: 2.5em;
+    text-align: center;
+}
 
-.bar-container { width: 80%; background-color: #222; border-radius: 20px; overflow: hidden; margin-bottom: 20px; }
-.bar { height: 30px; width: 0%; background: linear-gradient(90deg, #00fff0, #00b0ff); text-align: center; line-height: 30px; color: #000; font-weight: bold; transition: width 0.1s ease-in-out; }
+.bar-container {
+    width: 80%;
+    background-color: #222;
+    border-radius: 20px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    position: relative;
+}
 
-.tap-button { padding: 20px 40px; font-size: 24px; color: #00fffc; background: #222; border: 2px solid #00fffc; border-radius: 15px; cursor: pointer; text-transform: uppercase; text-shadow: 0 0 5px #00fffc; transition: 0.2s; }
-.tap-button:active { background: #00fffc; color: #000; transform: scale(0.95); }
+.bar {
+    height: 30px;
+    width: 0%;
+    background: linear-gradient(90deg, #00fff0, #00b0ff);
+    text-align: center;
+    line-height: 30px;
+    color: #000;
+    font-weight: bold;
+    transition: width 0.1s ease-in-out;
+    position: relative;
+}
 
-.points { margin-top: 15px; font-size: 20px; color: #00fffc; text-shadow: 0 0 5px #00fffc; }
+.tap-button {
+    padding: 20px 40px;
+    font-size: 26px;
+    color: #00fffc;
+    background: #222;
+    border: 2px solid #00fffc;
+    border-radius: 15px;
+    cursor: pointer;
+    text-transform: uppercase;
+    text-shadow: 0 0 5px #00fffc;
+    transition: 0.2s;
+    margin-bottom: 20px;
+    animation: pulse 2s infinite;
+}
+.tap-button:active {
+    background: #00fffc;
+    color: #000;
+    transform: scale(0.95);
+}
+@keyframes pulse {
+    0%{transform: scale(1);}
+    50%{transform: scale(1.05);}
+    100%{transform: scale(1);}
+}
 
-.flash { position: absolute; width: 100%; height: 100%; background: #00fff0; opacity: 0; pointer-events: none; }
-.flash.active { animation: flashAnim 0.3s forwards; }
-@keyframes flashAnim { 0% { opacity: 0.7; } 100% { opacity: 0; } }
+.points {
+    margin-top: 10px;
+    font-size: 22px;
+    color: #00fffc;
+    text-shadow: 0 0 8px #00fffc;
+    position: relative;
+}
 
-footer { position: absolute; bottom: 10px; font-size: 12px; color: #00fffc; text-shadow: 0 0 5px #00fffc; }
+.flash {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: #00fff0;
+    opacity: 0;
+    pointer-events: none;
+}
+.flash.active {
+    animation: flashAnim 0.3s forwards;
+}
+@keyframes flashAnim {
+    0% { opacity: 0.7; }
+    100% { opacity: 0; }
+}
 
-.ad-container { width: 80%; margin: 20px auto; text-align: center; color: #00fffc; }
+.message {
+    margin-top: 15px;
+    font-size: 18px;
+    color: #00fffc;
+    text-shadow: 0 0 5px #00fffc;
+    height: 24px;
+}
+
+footer {
+    position: absolute;
+    bottom: 10px;
+    font-size: 12px;
+    color: #00fffc;
+    text-shadow: 0 0 5px #00fffc;
+}
+
+.particle {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: #00fff0;
+    border-radius: 50%;
+    pointer-events: none;
+    animation: particleAnim 0.6s linear forwards;
+}
+@keyframes particleAnim {
+    0% {opacity:1; transform:translate(0,0);}
+    100% {opacity:0; transform:translate(var(--x), var(--y));}
+}
+
+.ad-container {
+    width: 80%;
+    margin: 20px auto;
+    text-align: center;
+    color: #00fffc;
+    font-size: 14px;
+}
 </style>
 </head>
 <body>
@@ -50,102 +156,84 @@ footer { position: absolute; bottom: 10px; font-size: 12px; color: #00fffc; text
   <div class="bar" id="energyBar">0%</div>
 </div>
 
-<button class="tap-button" id="tapBtn">TOCA AQUÍ</button>
+<button class="tap-button" id="tapBtn">¡TOCA Y GANA!</button>
 
 <div class="points" id="points">Puntos: 0</div>
 
-<div class="ad-container" id="adContainer">
-  <p>Tu cuenta de AdSense ya está verificada. Los anuncios se mostrarán automáticamente cuando Google los active.</p>
-</div>
+<div class="message" id="message">¡Sigue tocando y sube tu energía!</div>
+
+<div class="ad-container" id="adContainer"></div>
 
 <div class="flash" id="flash"></div>
 
 <footer>© 2025 TapEarn Energy</footer>
 
 <script>
+// Variables
 let energy = 0;
 let points = 0;
 
+// Elementos
 const bar = document.getElementById('energyBar');
 const pointsDisplay = document.getElementById('points');
 const flash = document.getElementById('flash');
 const tapBtn = document.getElementById('tapBtn');
+const message = document.getElementById('message');
 
-tapBtn.addEventListener('click', () => {
-    energy += 1;
-    points += 1;
+// Sonido
+const ding = new Audio('https://www.soundjay.com/button/beep-07.wav');
 
-    if (energy > 100) energy = 0;
+// Mensajes rotativos
+const messages = ["¡Tu energía crece!","No pares ahora 🔥","¡Estás rompiendo el récord!","Cada toque vale 💸"];
+let msgIndex = 0;
+setInterval(()=>{
+    msgIndex = (msgIndex+1)%messages.length;
+    message.textContent = messages[msgIndex];
+},4000);
 
-    bar.style.width = energy + '%';
-    bar.textContent = energy + '%';
-    pointsDisplay.textContent = 'Puntos: ' + points;
-
-    flash.classList.add('active');
-    setTimeout(() => flash.classList.remove('active'), 300);
-
-    if (energy === 100) {
-        energy = 0;
-        bar.style.width = '0%';
-        bar.textContent = '0%';
+// Función partículas
+function createParticles(x,y){
+    for(let i=0;i<8;i++){
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        const dx = (Math.random()-0.5)*200;
+        const dy = (Math.random()-0.5)*200;
+        particle.style.setProperty('--x', dx+'px');
+        particle.style.setProperty('--y', dy+'px');
+        particle.style.left = x+'px';
+        particle.style.top = y+'px';
+        document.body.appendChild(particle);
+        setTimeout(()=>particle.remove(),600);
     }
-});
-</script>
-</body>
-</html>.flash { position: absolute; width: 100%; height: 100%; background: #00fff0; opacity: 0; pointer-events: none; }
-.flash.active { animation: flashAnim 0.3s forwards; }
-@keyframes flashAnim { 0% { opacity: 0.7; } 100% { opacity: 0; } }
+}
 
-footer { position: absolute; bottom: 10px; font-size: 12px; color: #00fffc; text-shadow: 0 0 5px #00fffc; }
-
-.ad-container { width: 80%; margin: 20px auto; text-align: center; color: #00fffc; }
-</style>
-</head>
-<body>
-<h1>TapEarn Energy</h1>
-
-<div class="bar-container">
-  <div class="bar" id="energyBar">0%</div>
-</div>
-
-<button class="tap-button" id="tapBtn">TOCA AQUÍ</button>
-
-<div class="points" id="points">Puntos: 0</div>
-
-<div class="ad-container" id="adContainer">
-  <p>Tu cuenta de AdSense se verificará con este fragmento. Anuncios se activarán después de aprobación.</p>
-</div>
-
-<div class="flash" id="flash"></div>
-
-<footer>© 2025 TapEarn Energy</footer>
-
-<script>
-let energy = 0;
-let points = 0;
-
-const bar = document.getElementById('energyBar');
-const pointsDisplay = document.getElementById('points');
-const flash = document.getElementById('flash');
-const tapBtn = document.getElementById('tapBtn');
-
-tapBtn.addEventListener('click', () => {
+// Evento click
+tapBtn.addEventListener('click',(e)=>{
     energy += 1;
     points += 1;
 
-    if (energy > 100) energy = 0;
+    if(energy>100) energy=0;
 
-    bar.style.width = energy + '%';
-    bar.textContent = energy + '%';
-    pointsDisplay.textContent = 'Puntos: ' + points;
+    // Actualizar barra y puntos
+    bar.style.width = energy+'%';
+    bar.textContent = energy+'%';
+    pointsDisplay.textContent = 'Puntos: '+points;
 
+    // Flash
     flash.classList.add('active');
-    setTimeout(() => flash.classList.remove('active'), 300);
+    setTimeout(()=>flash.classList.remove('active'),300);
 
-    if (energy === 100) {
-        energy = 0;
-        bar.style.width = '0%';
-        bar.textContent = '0%';
+    // Sonido
+    ding.currentTime=0; ding.play();
+
+    // Partículas
+    createParticles(e.clientX,e.clientY);
+
+    // Reset al 100%
+    if(energy===100){
+        energy=0;
+        bar.style.width='0%';
+        bar.textContent='0%';
     }
 });
 </script>
